@@ -1,4 +1,4 @@
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_list_or_404, get_object_or_404
 
 from rest_framework import filters, mixins, permissions, viewsets
 from rest_framework.pagination import LimitOffsetPagination
@@ -11,7 +11,13 @@ from posts.models import Comment, Follow, Group, Post
 class CreateListViewSet(mixins.CreateModelMixin,
                         mixins.ListModelMixin,
                         viewsets.GenericViewSet):
-    pass
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class CustomModelViewSet(viewsets.ModelViewSet):
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
 
 
 class GroupViewSet(viewsets.ReadOnlyModelViewSet):
@@ -20,7 +26,7 @@ class GroupViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = (permissions.AllowAny,)
 
 
-class PostViewSet(viewsets.ModelViewSet):
+class PostViewSet(CustomModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     pagination_class = LimitOffsetPagination
@@ -28,7 +34,7 @@ class PostViewSet(viewsets.ModelViewSet):
     # он и будет использоваться в этом вьюсете
 
 
-class CommentViewSet(viewsets.ModelViewSet):
+class CommentViewSet(CustomModelViewSet):
     serializer_class = CommentSerializer
     # используется пермишен по умолчанию
 
@@ -42,11 +48,11 @@ class CommentViewSet(viewsets.ModelViewSet):
 class FollowViewSet(CreateListViewSet):
     serializer_class = FollowSerializer
     permission_classes = (permissions.IsAuthenticated,)
-    filter_backends = (filters.SearchFilter)
+    filter_backends = (filters.SearchFilter,)
     search_fields = ('following__username',)
 
     def get_queryset(self):
-        user_id = self.request.user
-        get_object_or_404(Follow, pk=user_id)
-        new_queryset = Follow.objects.filter(user=user_id)
+        user = self.request.user
+        get_list_or_404(Follow, user=user)
+        new_queryset = Follow.objects.filter(user=user)
         return new_queryset

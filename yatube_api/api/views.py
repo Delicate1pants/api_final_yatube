@@ -53,6 +53,5 @@ class FollowViewSet(CreateListViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        get_list_or_404(Follow, user=user)
-        new_queryset = Follow.objects.filter(user=user)
+        new_queryset = get_list_or_404(Follow, user=user)
         return new_queryset

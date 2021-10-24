@@ -53,5 +53,10 @@ class FollowViewSet(CreateListViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        new_queryset = get_list_or_404(Follow, user=user)
+        # Если я напишу new_queryset = get_list_or_404(Follow, user=user)
+        # то создастся лист объектов, а нужен queryset,
+        # так как search filter работает с queryset'ом.
+        # Поэтому get_list_or_404 нужен только для поимки исключения
+        get_list_or_404(Follow, user=user)
+        new_queryset = Follow.objects.filter(user=user)
         return new_queryset

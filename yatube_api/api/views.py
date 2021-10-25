@@ -1,5 +1,4 @@
-from django.shortcuts import get_list_or_404, get_object_or_404
-
+from django.shortcuts import get_object_or_404
 from rest_framework import filters, mixins, permissions, viewsets
 from rest_framework.pagination import LimitOffsetPagination
 
@@ -53,10 +52,5 @@ class FollowViewSet(CreateListViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        # Если я напишу new_queryset = get_list_or_404(Follow, user=user)
-        # то создастся лист объектов, а нужен queryset,
-        # так как search filter работает с queryset'ом.
-        # Поэтому get_list_or_404 нужен только для поимки исключения
-        get_list_or_404(Follow, user=user)
         new_queryset = Follow.objects.filter(user=user)
         return new_queryset
